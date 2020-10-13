@@ -1,14 +1,13 @@
 import tkinter as tk
+from tkinter import ttk
 from my_sniffer import *
+from my_packet import *
 
 # Main window.
 root = tk.Tk()
 # Title of the window.
 root.title('Tomcat')
 
-# Frames to hold the top, middle, and bottom widgets.
-frame_top = tk.Frame(master=root)
-frame_mid = tk.Frame(master=root)
 frame_bottom = tk.Frame(master=root)
 
 # When a function is called without parentheses a function reference is sent to the callable.
@@ -18,20 +17,26 @@ button_stop = tk.Button(master=frame_bottom, text='Stop', command=stop_sniff, wi
 button_sniff.pack(padx=10, pady=5, side=tk.LEFT)
 button_stop.pack(padx=10, pady=5)
 
-lb_packet_capture = tk.Listbox(master=frame_mid)
-# If you start out with a keyword argument the rest of your arguments must be keyword arguments.
-# Other way around is fine though.
-# If you add a * before the parameter name in the function, you don't know how many arguments will be passed.
-for i in range(100):
-    lb_packet_capture.insert(tk.END, 'Packet ' + str(i))
-lb_packet_capture.pack(fill=tk.BOTH, expand=True)
+my_tree = ttk.Treeview(master=root, selectmode=tk.BROWSE)
+my_tree['columns'] = 'Source IP'
+
+my_tree.column(column='#0', anchor=tk.W)
+
+# Create bar at the very top.
+my_tree.heading(column='#0', text='Source IP', anchor=tk.W)
+
+# Populate the treeview.
+for i in range(10):
+
+    user = '192.168.0.{}'.format(i)
+    my_tree.insert(parent='', index=tk.END, iid=i,
+                   text=user)
 
 # Label to display text.
-label_title = tk.Label(master=frame_top, text='Tomcat Packet Sniffer')
-label_title.pack()
+label_title = tk.Label(master=root, text='Tomcat Packet Sniffer')
 
-frame_top.pack()
-frame_mid.pack(fill=tk.BOTH, expand=True)
+label_title.pack()
+my_tree.pack()
 frame_bottom.pack()
 
 # Display the GUI.
