@@ -1,6 +1,6 @@
 import scapy.all as scapy
-import io
-import sys
+import re
+
 '''
 @:param event - The clicking of the button.
 '''
@@ -14,8 +14,7 @@ def stop_sniff():
 
 # Parse the response.
 def packet_callback(packet):
-    capture = packet.show(dump=True)
-    to_parse = capture.replace(' ', '')
-    parse_two = to_parse.replace('\n', '')
-    print('SOCCER:\n' + parse_two)
+    # dump=True returns the packet as a string, get rid of all whitespace.
+    capture = re.sub(r'[\n\t\s]', '', packet.show(dump=True))
+    print(capture)
 
