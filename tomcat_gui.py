@@ -5,20 +5,12 @@ from my_packet import *
 
 # Main window.
 root = tk.Tk()
-# Title of the window.
 root.title('Tomcat')
+root.geometry('500x500')
 
-# Label to display text.
-label_ip = tk.Label(master=root, text='Tomcat Packet Sniffer')
+button_sniff = tk.Button(master=root, text='Sniff', width=15)
 
-# When a function is called without parentheses a function reference is sent to the callable.
-# When you use the lambda command it returns a reference to the created function.
-button_sniff = tk.Button(master=root, text='Sniff', width=15,
-                         command= lambda: start_sniff(widget=label_ip))
-
-button_sniff.pack(padx=10, pady=5, side=tk.LEFT)
-
-label_ip.pack()
+button_sniff.pack()
 
 # Display the GUI.
 tk.mainloop()

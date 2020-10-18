@@ -1,6 +1,6 @@
 import scapy.all as scapy
 import re
-
+from my_packet import *
 
 def start_sniff(widget):
     """
