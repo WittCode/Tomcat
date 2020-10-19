@@ -1,7 +1,7 @@
 import tkinter as tk
 import scapy.all as scapy
 import threading
-import re
+import collections
 
 # --- functions ---
 
@@ -11,26 +11,29 @@ def sniffing():
     scapy.sniff(prn=custom_action(root), stop_filter=stop_sniffing)
 
 
-def custom_action(root):
+def custom_action(r):
     def packet_callback(packet):
+        # Dictionary where key is local IP and value is source.
+        global d
 
-        capture = re.sub(r'[\n\t\s]', '', packet.show(dump=True))
-        if ('type=IPv4' in capture):
-            global i
-            global d
-            # Find all the ip addresses regex.
-            # Issue is need IPv4 addresses only. ARP and IPv6 mess it up.
-            ip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', capture)
-            src_ip = ip[0]
-            dst_ip = ip[1]
-            if src_ip[0:3] == '192' and src_ip not in d.values():
-                d['src: {}'.format(i)] = src_ip
-                i += 1
-                print(d)
-                label = tk.Label(root)
-                label.config(text='Source: {}\n'
-                                  'Destination: {}'.format(src_ip, dst_ip))
-                label.pack()
+        # Check if packet has IP layer.
+        if 'IP' in packet:
+            src_ip = packet['IP'].src
+            dst_ip = packet['IP'].dst
+            # Check if IP in sub-domain.
+            if src_ip[0:9] == '192.168.0':
+                # Does key exist and is destination IP in the list?
+                if dst_ip not in d.values():
+                    d[src_ip].append(dst_ip)
+                    label = tk.Label(r)
+                    label.config(text='Source IP: {}\nDestination IPs: {}'.format(src_ip, d[src_ip]))
+                    label.pack()
+                # Destination IP is in list.
+                else:
+                    d[src_ip] = dst_ip
+                    label = tk.Label(r)
+                    label.config(text=d[src_ip])
+                    label.pack()
 
     return packet_callback
 
@@ -60,8 +63,7 @@ def stop_button():
 
 thread = None
 switch = False
-d = {}
-i = 0
+d = collections.defaultdict(list)
 
 root = tk.Tk()
 root.geometry('500x500')
