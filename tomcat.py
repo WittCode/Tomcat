@@ -3,6 +3,7 @@ import scapy.all as scapy
 import threading
 import collections
 
+
 # --- functions ---
 
 
@@ -20,20 +21,22 @@ def custom_action(r):
         if 'IP' in packet:
             src_ip = packet['IP'].src
             dst_ip = packet['IP'].dst
-            # Check if IP in sub-domain.
+            # If source IP in subdomain continue.
             if src_ip[0:9] == '192.168.0':
-                # Does key exist and is destination IP in the list?
-                if dst_ip not in d.values():
+                # If source IP is not registered, register it and add destination.
+                if src_ip not in d:
                     d[src_ip].append(dst_ip)
                     label = tk.Label(r)
                     label.config(text='Source IP: {}\nDestination IPs: {}'.format(src_ip, d[src_ip]))
                     label.pack()
-                # Destination IP is in list.
+                # If source IP is registered check if destination is registered.
                 else:
-                    d[src_ip] = dst_ip
-                    label = tk.Label(r)
-                    label.config(text=d[src_ip])
-                    label.pack()
+                    # If destination IP isn't registered with source IP add it.
+                    if dst_ip not in d[src_ip]:
+                        d[src_ip].append(dst_ip)
+                        label = tk.Label(r)
+                        label.config(text='Source IP: {}\nDestination IPs: {}'.format(src_ip, d[src_ip]))
+                        label.pack()
 
     return packet_callback
 
@@ -58,6 +61,7 @@ def stop_button():
 
     switch = True
 
+
 # --- main ---
 
 
@@ -73,6 +77,3 @@ tk.Button(root, text="Start sniffing", command=start_button, width=15).pack()
 tk.Button(root, text="Stop sniffing", command=stop_button, width=15).pack()
 
 root.mainloop()
-
-
-
