@@ -1,7 +1,9 @@
 import tkinter as tk
+from tkinter import ttk
 import scapy.all as scapy
 import threading
 import collections
+import socket
 
 
 # --- functions ---
@@ -16,6 +18,7 @@ def custom_action(r):
     def packet_callback(packet):
         # Dictionary where key is local IP and value is source.
         global d
+        global treev
 
         # Check if packet has IP layer.
         if 'IP' in packet:
@@ -25,18 +28,33 @@ def custom_action(r):
             if src_ip[0:9] == '192.168.0':
                 # If source IP is not registered, register it and add destination.
                 if src_ip not in d:
+                    # Add to dictionary.
                     d[src_ip].append(dst_ip)
-                    label = tk.Label(r)
-                    label.config(text='Source IP: {}\nDestination IPs: {}'.format(src_ip, d[src_ip]))
-                    label.pack()
+                    print(dst_ip)
+                    try:
+                        print(socket.gethostbyaddr(dst_ip))
+                    except socket.herror:
+                        print('Not found.')
+                    row = treev.insert('', index=tk.END, text=src_ip)
+                    # Append to parent row.
+                    treev.insert(row, tk.END, text=dst_ip)
+                    treev.pack(fill=tk.X)
                 # If source IP is registered check if destination is registered.
                 else:
                     # If destination IP isn't registered with source IP add it.
                     if dst_ip not in d[src_ip]:
                         d[src_ip].append(dst_ip)
-                        label = tk.Label(r)
-                        label.config(text='Source IP: {}\nDestination IPs: {}'.format(src_ip, d[src_ip]))
-                        label.pack()
+                        cur_item = treev.focus()
+                        print(dst_ip)
+                        try:
+                            print(socket.gethostbyaddr(dst_ip))
+                        except socket.herror:
+                            print('Not found.')
+                        if treev.item(cur_item)['text'] == src_ip:
+                            treev.insert(cur_item, tk.END, text=dst_ip)
+
+
+
 
     return packet_callback
 
@@ -69,11 +87,20 @@ thread = None
 switch = False
 d = collections.defaultdict(list)
 
+socket.setdefaulttimeout(1.0)
+
 root = tk.Tk()
 root.geometry('500x500')
 root.title('Tomcat')
 
-tk.Button(root, text="Start sniffing", command=start_button, width=15).pack()
-tk.Button(root, text="Stop sniffing", command=stop_button, width=15).pack()
+treev = ttk.Treeview(root, height=400)
+treev.column('#0', width=50, minwidth=25)
+
+button_frame = tk.Frame(root)
+
+tk.Button(button_frame, text="Start sniffing", command=start_button, width=15).pack(side=tk.LEFT)
+tk.Button(button_frame, text="Stop sniffing", command=stop_button, width=15).pack(side=tk.LEFT)
+
+button_frame.pack(side=tk.BOTTOM)
 
 root.mainloop()
